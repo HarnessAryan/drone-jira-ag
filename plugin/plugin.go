@@ -116,7 +116,7 @@ func Exec(ctx context.Context, args Args) error {
 	// 	}
 	// 	issues = []string{issue} // add the single issue here for consistency
 	// }
-	if len(issues) == 0 {
+	if len(args.IssueKeys) == 0 {
 		logger.Debugln("cannot find issues")
 		return errors.New("failed to extract issues")
 	}
