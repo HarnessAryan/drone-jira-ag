@@ -104,10 +104,12 @@ func Exec(ctx context.Context, args Args) error {
 		WithField("environment Type", environmentType).
 		WithField("environment ID", environmentID)
 
-	//check if PLUGIN_ISSUEKEYS is provided
-	// if len(args.IssueKeys) > 0 {
-	// 	issues = args.IssueKeys
-	// } else {
+	// check if PLUGIN_ISSUEKEYS is provided
+	if len(args.IssueKeys) > 0 {
+		logger.Debugln(args.IssueKeys)
+		issues = args.IssueKeys
+	} 
+	// else {
 	// 	// fallback to extracting from commit if no issue keys are passed
 	// 	var issue string = extractIssues(args)
 	// 	if issue == "" {
@@ -116,7 +118,7 @@ func Exec(ctx context.Context, args Args) error {
 	// 	}
 	// 	issues = []string{issue} // add the single issue here for consistency
 	// }
-	if len(args.IssueKeys) == 0 {
+	if len(issues) == 0 {
 		logger.Debugln("cannot find issues")
 		return errors.New("failed to extract issues")
 	}
