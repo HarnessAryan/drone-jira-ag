@@ -20,7 +20,6 @@ func extractIssues(args Args) []string {
 
 	regex := regexp.MustCompile(args.Project + "\\-\\d+")
 	matches := regex.FindAllString(fmt.Sprintln(
-		args.AdditionalMessage,
 		args.Commit.Message,
 		args.PullRequest.Title,
 		args.Commit.Source,

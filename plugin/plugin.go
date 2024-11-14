@@ -74,8 +74,6 @@ type Args struct {
 	ConnectHostname string `envconfig:"PLUGIN_CONNECT_HOSTNAME"`
 	// Issue Keys(optional)
 	IssueKeys []string `envconfig:"PLUGIN_ISSUEKEYS"`
-
-	AdditionalMessage string `envconfig:"PLUGIN_ADDITIONAL_MESSAGE"`
 }
 
 // Exec executes the plugin.
