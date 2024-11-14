@@ -108,10 +108,13 @@ func Exec(ctx context.Context, args Args) error {
 	if len(args.IssueKeys) > 0 {
 		logger.Debugln("Provided issue keys are : ", args.IssueKeys)
 		issues = args.IssueKeys
-	}
-	if len(issues) == 0 {
-		logger.Debugln("cannot find issues")
-		return errors.New("failed to extract issues")
+	} else {
+		// fallback to extracting from commit if no issue keys are passed
+		issues = extractIssues(args)
+		if len(issues) == 0 {
+			logger.Debugln("cannot find issue number")
+			return errors.New("failed to extract issue number")
+		}
 	}
 	logger = logger.WithField("issues", strings.Join(issues, ","))
 	logger.Debugln("successfully extracted all issues")
