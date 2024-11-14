@@ -106,7 +106,7 @@ func Exec(ctx context.Context, args Args) error {
 
 	// check if PLUGIN_ISSUEKEYS is provided
 	if len(args.IssueKeys) > 0 {
-		logger.Debugln("Provided issue keys are : ", args.IssueKeys)
+		logger.Debugln("Provided issue keys are :", args.IssueKeys)
 		issues = args.IssueKeys
 	} else {
 		// fallback to extracting from commit if no issue keys are passed
