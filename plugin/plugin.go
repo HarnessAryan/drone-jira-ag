@@ -84,7 +84,7 @@ func Exec(ctx context.Context, args Args) error {
 		environ         = toEnvironment(args)
 		environmentID   = toEnvironmentId(args)
 		environmentType = toEnvironmentType(args)
-		issues          = extractIssues(args)
+		issues          []string
 		state           = toState(args)
 		version         = toVersion(args)
 		deeplink        = toLink(args)
@@ -106,14 +106,13 @@ func Exec(ctx context.Context, args Args) error {
 
 	// check if PLUGIN_ISSUEKEYS is provided
 	if len(args.IssueKeys) > 0 {
-		logger.Debugln(args.IssueKeys)
+		logger.Debugln("Provided issue keys are : ", args.IssueKeys)
 		issues = args.IssueKeys
-	} 
+	}
 	if len(issues) == 0 {
 		logger.Debugln("cannot find issues")
 		return errors.New("failed to extract issues")
 	}
-	issues = removeDuplicates(issues)
 	logger = logger.WithField("issues", strings.Join(issues, ","))
 	logger.Debugln("successfully extracted all issues")
 
@@ -456,21 +455,3 @@ func lookupTenant(tenant string) (*Tenant, error) {
 	err = json.NewDecoder(res.Body).Decode(out)
 	return out, err
 }
-
-func removeDuplicates(list []string) []string {
-	// Create an empty map to store seen elements
-	seen := make(map[string]bool)
-
-	// Initialize a new list to store unique elements
-	uniqueList := []string{}
-
-	for _, element := range list {
-	  // Check if the element is already seen
-	  if !seen[element] {
-		seen[element] = true
-		uniqueList = append(uniqueList, element)
-	  }
-	}
-
-	return uniqueList
-  }
