@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -101,18 +102,20 @@ func Exec(ctx context.Context, args Args) error {
 		WithField("environment Type", environmentType).
 		WithField("environment ID", environmentID)
 
-	//check if PLUGIN_ISSUEKEYS is provided
+	// check if PLUGIN_ISSUEKEYS is provided
 	if len(args.IssueKeys) > 0 {
+		logger.Debugln("Provided issue keys are :", args.IssueKeys)
 		issues = args.IssueKeys
 	} else {
 		// fallback to extracting from commit if no issue keys are passed
-		var issue string = extractIssue(args)
-		if issue == "" {
+		issues = extractIssues(args)
+		if len(issues) == 0 {
 			logger.Debugln("cannot find issue number")
 			return errors.New("failed to extract issue number")
 		}
-		issues = []string{issue} // add the single issue here for consistency
 	}
+	logger = logger.WithField("issues", strings.Join(issues, ","))
+	logger.Debugln("successfully extracted all issues")
 
 	commitMessage := args.Commit.Message
 	if len(commitMessage) > 255 {
@@ -195,7 +198,7 @@ func Exec(ctx context.Context, args Args) error {
 	// validation of arguments
 	if (args.ClientID == "" && args.ClientSecret == "") && (args.ConnnectKey == "") {
 		logger.Debugln("client id and secret are empty. specify the client id and secret or specify connect key")
-		return errors.New("No client id & secret or connect token & hostname provided")
+		return errors.New("noClientIdAndSecretOrConnectTokenAndHostnameProvided")
 	}
 	// create tokens and deployments
 	if args.ClientID != "" && args.ClientSecret != "" {
@@ -302,7 +305,7 @@ func getOauthToken(args Args) (string, error) {
 		return "", err
 	}
 	if res.StatusCode > 299 {
-		return "", fmt.Errorf("Error code %d", res.StatusCode)
+		return "", fmt.Errorf("errorCode %d", res.StatusCode)
 	}
 	output := map[string]interface{}{}
 	err = json.Unmarshal(out, &output)
@@ -356,7 +359,7 @@ func createDeployment(payload DeploymentPayload, cloudID, debug, oauthToken stri
 		logrus.WithField("status", res.Status).WithField("response", outString).Info("request complete")
 	}
 	if res.StatusCode > 299 {
-		return fmt.Errorf("Error code %d", res.StatusCode)
+		return fmt.Errorf("errorCode %d", res.StatusCode)
 	}
 	return nil
 }
@@ -387,7 +390,7 @@ func createConnectDeployment(payload DeploymentPayload, cloudID, debug, jwtToken
 		logrus.WithField("status", res.Status).WithField("response", outString).Info("request complete")
 	}
 	if res.StatusCode > 299 {
-		return fmt.Errorf("Error code %d", res.StatusCode)
+		return fmt.Errorf("errorCode %d", res.StatusCode)
 	}
 	return nil
 }
@@ -418,7 +421,7 @@ func createConnectBuild(payload BuildPayload, cloudID, debug, jwtToken string) e
 		logrus.WithField("status", res.Status).WithField("response", outString).Info("request complete")
 	}
 	if res.StatusCode > 299 {
-		return fmt.Errorf("Error code %d", res.StatusCode)
+		return fmt.Errorf("errorCode %d", res.StatusCode)
 	}
 	return nil
 }
@@ -428,12 +431,12 @@ func getCloudID(instance, cloudID string) (string, error) {
 
 		tenant, err := lookupTenant(instance)
 		if err != nil {
-			return "", fmt.Errorf("Cannot get cloudid from instance, %s", err)
+			return "", fmt.Errorf("cannotGetCloudIdFromInstance, %s", err)
 		}
 		return tenant.ID, nil
 	}
 	if cloudID == "" {
-		return "", fmt.Errorf("cloud id is empty. specify the cloud id or instance name")
+		return "", fmt.Errorf("cloudIdIsEmptySpecifyTheCloudIdOrInstanceName")
 	}
 	return cloudID, nil
 }
@@ -447,7 +450,7 @@ func lookupTenant(tenant string) (*Tenant, error) {
 	}
 	defer res.Body.Close()
 	if res.StatusCode > 299 {
-		return nil, fmt.Errorf("Error code %d", res.StatusCode)
+		return nil, fmt.Errorf("errorCode %d", res.StatusCode)
 	}
 	out := new(Tenant)
 	err = json.NewDecoder(res.Body).Decode(out)
